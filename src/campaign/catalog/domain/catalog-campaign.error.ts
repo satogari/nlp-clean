@@ -1,17 +1,22 @@
-export class CampaignInvalidLifecycleError extends Error{
+export class CampaignCatalogInvalidIdFormatError extends Error {
     constructor(){
-        super("Invalid Campaign Lifecycle")
+        super("Invalid Campaign Catalog Id Format")
+    }
+}
+export class CampaignCatalogInvalidLifecycleError extends Error{
+    constructor(){
+        super("Invalid Campaign Catalog Lifecycle")
     }
 }
 
-export class CampaignInvalidDateRangeError extends Error {
+export class CampaignCatalogInvalidDateRangeError extends Error {
     constructor(){
         super("Invalid Date Range Error")
     }
 }
-export class CampaignInvalidName extends Error {
+export class CampaignCatalogInvalidName extends Error {
     constructor(){
-        super("Invalid Campaign Name")
+        super("Invalid Campaign Catalog Name")
     }
 }
 

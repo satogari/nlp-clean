@@ -1,11 +1,16 @@
-import { Campaign } from "../domain/catalog-campaign.enum"
-import { CampaignInvalidDateRangeError, CampaignInvalidLifecycleError, CampaignInvalidName, PartnerMissingError, PartnerNotFoundError } from "../domain/catalog-campaign.error"
+import { CatalogCampaignId } from "../domain/catalog-campaign-id.value-object"
+import { CatalogCampaignName } from "../domain/catalog-campaign-name.value-object"
+import { CatalogCampaign } from "../domain/catalog-campaign.aggregate"
+import { CampaignCatalog } from "../domain/catalog-campaign.enum"
+import { CampaignCatalogInvalidDateRangeError, CampaignCatalogInvalidLifecycleError, CampaignCatalogInvalidName, PartnerMissingError, PartnerNotFoundError } from "../domain/catalog-campaign.error"
+import { CatalogCampaignRepository } from "../domain/catalog-campaign.repository"
 import { PartnerId } from "../domain/partner-id.value-object"
 import { CreateCampaignCatalogUseCaseInteractor, CreateCampaignCatalogUseCaseRequest } from "./create-campaign-catalog.usecase.interactor"
 import { PartnerDataProvider } from "./port/partner-data-provider"
 
 describe("CreateCampaignCatalog", () => {
     let inlineMemoryPartnerDataProvider: jest.Mocked<PartnerDataProvider>
+    let inlineMemoryCatalogCampaignRepository: jest.Mocked<CatalogCampaignRepository>
     let usecase: CreateCampaignCatalogUseCaseInteractor
     const now = new Date()
     const nextFourteenDays = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000)
@@ -14,15 +19,49 @@ describe("CreateCampaignCatalog", () => {
 
     beforeEach(() => {
         inlineMemoryPartnerDataProvider = { findByIds: jest.fn() }
-        usecase = new CreateCampaignCatalogUseCaseInteractor(inlineMemoryPartnerDataProvider)
+        inlineMemoryCatalogCampaignRepository = { save: jest.fn(), generateId: jest.fn() }
+        usecase = new CreateCampaignCatalogUseCaseInteractor(inlineMemoryPartnerDataProvider, inlineMemoryCatalogCampaignRepository)
+    })
+
+    const validPartnerIds = ["__VALID_ID_1__"]
+    const validPartnerIdObjects = [new PartnerId("__VALID_ID_1__")]
+
+    const setupPartnerDataProvider = (partnerIds: PartnerId[]) => {
+        inlineMemoryPartnerDataProvider.findByIds.mockResolvedValueOnce(partnerIds)
+    }
+
+    describe("Happy Case", () => {
+        it("should return campaign successfully", async () => { 
+            const request: CreateCampaignCatalogUseCaseRequest = {
+                status: CampaignCatalog.Status.DRAFT,
+                startDateTime: nextFourteenDays,
+                endDateTime: nextFifteenDays,
+                name: "__VALID_NAME__",
+                partnerIds: validPartnerIds,
+            }
+            const expectedCatalogCampaignId = new CatalogCampaignId("__VALID_CATALOG_CAMPAIGN_ID__")
+            const expectedCatalogCampaign = CatalogCampaign.create({
+                id: expectedCatalogCampaignId,
+                status: request.status,
+                name: new CatalogCampaignName(request.name),
+                startDateTime: nextFourteenDays,
+                endDateTime: nextFifteenDays
+            })
+            setupPartnerDataProvider(validPartnerIdObjects)
+            inlineMemoryCatalogCampaignRepository.generateId.mockResolvedValue(expectedCatalogCampaignId)
+            inlineMemoryCatalogCampaignRepository.save.mockResolvedValueOnce(expectedCatalogCampaign)
+
+            const result = await usecase.execute(request)
+            expect(result.equal(expectedCatalogCampaign)).toBeTruthy
+        })
     })
 
     describe("Edge Case", () => {
         describe("Domain Errors", () => {
             it("should throw partner not found", async () => {
-                inlineMemoryPartnerDataProvider.findByIds.mockResolvedValueOnce([])
+                setupPartnerDataProvider([])
                 const request: CreateCampaignCatalogUseCaseRequest = {
-                    status: Campaign.Status.DRAFT,
+                    status: CampaignCatalog.Status.DRAFT,
                     startDateTime: nextFourteenDays,
                     endDateTime: nextFifteenDays,
                     name: "__VALID_CAMPAIGN_NAME__",
@@ -32,11 +71,9 @@ describe("CreateCampaignCatalog", () => {
             })
 
             it("should throw partner missing", async () => {
-                inlineMemoryPartnerDataProvider.findByIds.mockResolvedValueOnce([
-                    new PartnerId("__VALID_ID_1__"),
-                ])
+                setupPartnerDataProvider(validPartnerIdObjects)
                 const request: CreateCampaignCatalogUseCaseRequest = {
-                    status: Campaign.Status.DRAFT,
+                    status: CampaignCatalog.Status.DRAFT,
                     startDateTime: nextFourteenDays,
                     endDateTime: nextFifteenDays,
                     name: "__VALID_CAMPAIGN_NAME__",
@@ -46,42 +83,36 @@ describe("CreateCampaignCatalog", () => {
             })
 
             it("should throw invalid campaign lifecycle", async () => {
-                inlineMemoryPartnerDataProvider.findByIds.mockResolvedValueOnce([
-                    new PartnerId("__VALID_ID_1__"),
-                ])
+                setupPartnerDataProvider(validPartnerIdObjects)
                 const request = {
-                    partnerIds: ["__VALID_ID_1__"],
+                    partnerIds: validPartnerIds,
                     name: "__TEST_NAME__"
                 } as CreateCampaignCatalogUseCaseRequest
-                await expect(usecase.execute(request)).rejects.toThrow(CampaignInvalidLifecycleError)
+                await expect(usecase.execute(request)).rejects.toThrow(CampaignCatalogInvalidLifecycleError)
             })
 
             it("should throw invalid date range", async () => {
-                inlineMemoryPartnerDataProvider.findByIds.mockResolvedValueOnce([
-                    new PartnerId("__VALID_ID_1__"),
-                ])
+                setupPartnerDataProvider(validPartnerIdObjects)
                 const request: CreateCampaignCatalogUseCaseRequest = {
-                    status: Campaign.Status.DRAFT,
+                    status: CampaignCatalog.Status.DRAFT,
                     startDateTime: thirtyDaysAgo,
                     endDateTime: nextFifteenDays,
                     name: "__TEST_NAME__",
-                    partnerIds: ["__VALID_ID_1__"],
+                    partnerIds: validPartnerIds,
                 }
-                await expect(usecase.execute(request)).rejects.toThrow(CampaignInvalidDateRangeError)
+                await expect(usecase.execute(request)).rejects.toThrow(CampaignCatalogInvalidDateRangeError)
             })
 
             it("should throw invalid campaign name", async () => {
-                inlineMemoryPartnerDataProvider.findByIds.mockResolvedValueOnce([
-                    new PartnerId("__VALID_ID_1__"),
-                ])
+                setupPartnerDataProvider(validPartnerIdObjects)
                 const request: CreateCampaignCatalogUseCaseRequest = {
-                    status: Campaign.Status.DRAFT,
+                    status: CampaignCatalog.Status.DRAFT,
                     startDateTime: nextFourteenDays,
                     endDateTime: nextFifteenDays,
                     name: "",
-                    partnerIds: ["__VALID_ID_1__"],
+                    partnerIds: validPartnerIds,
                 }
-                await expect(usecase.execute(request)).rejects.toThrow(CampaignInvalidName)
+                await expect(usecase.execute(request)).rejects.toThrow(CampaignCatalogInvalidName)
             })
         })
     })

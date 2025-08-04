@@ -1,4 +1,4 @@
-import { CampaignInvalidName } from "./catalog-campaign.error"
+import { CampaignCatalogInvalidName } from "./catalog-campaign.error"
 
 export class CatalogCampaignName {
     constructor(name: string){
@@ -6,7 +6,7 @@ export class CatalogCampaignName {
     }
     private validate(name:string) {
         if(name.length  === 0){
-            throw new CampaignInvalidName
+            throw new CampaignCatalogInvalidName
         }
     }
 }
