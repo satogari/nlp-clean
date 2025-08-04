@@ -9,10 +9,10 @@ export class CatalogCampaignId {
       throw new CampaignCatalogInvalidIdFormatError();
     }
   }
-  public equal(value: CatalogCampaignId): boolean {
-    return this.id === value.Id;
+  public equal(id: CatalogCampaignId): boolean {
+    return this.id === id.value;
   }
-  get Id() {
+  get value() {
     return this.id;
   }
 }

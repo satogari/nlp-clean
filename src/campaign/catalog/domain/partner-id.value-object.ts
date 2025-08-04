@@ -9,4 +9,7 @@ export class PartnerId {
       throw new PartnerInvalidIdFormatError();
     }
   }
+  get value(): string {
+    return this.id;
+  }
 }

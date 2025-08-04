@@ -45,10 +45,25 @@ export class CatalogCampaign {
       input.partnerIds,
     );
   }
+  public equal(catalogCampaign: CatalogCampaign): boolean {
+    return catalogCampaign.Id === this.id;
+  }
   get Id() {
     return this.id;
   }
-  public equal(catalogCampaign: CatalogCampaign): boolean {
-    return catalogCampaign.Id === this.id;
+  get Name() {
+    return this.name;
+  }
+  get Status() {
+    return this.status;
+  }
+  get StartDateTime() {
+    return this.startDateTime;
+  }
+  get EndDateTime() {
+    return this.endDateTime;
+  }
+  get PartnerIds() {
+    return this.partnerIds;
   }
 }
