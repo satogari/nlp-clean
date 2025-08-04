@@ -9,3 +9,24 @@ export class CampaignInvalidDateRangeError extends Error {
         super("Invalid Date Range Error")
     }
 }
+export class CampaignInvalidName extends Error {
+    constructor(){
+        super("Invalid Campaign Name")
+    }
+}
+
+export class PartnerNotFoundError extends Error {
+    constructor(){
+        super("Partner Not Found Error")
+    }
+}
+export class PartnerInvalidIdFormatError extends Error {
+    constructor(){
+        super("Partner Invalid Id Format Error")
+    }
+}
+export class PartnerMissingError extends Error {
+    constructor(){
+        super("Partner Missing Error")
+    }
+}
