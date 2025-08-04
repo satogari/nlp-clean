@@ -19,13 +19,6 @@ export class CreateCampaignCatalogUseCaseInteractor implements CreateCampaignCat
 
     }
     async execute(request: CreateCampaignCatalogUseCaseRequest): Promise<CatalogCampaign> {
-        const createdCampaign = CatalogCampaign.create({
-            status: request.status,
-            startDateTime: request.startDateTime,
-            endDateTime: request.endDateTime,
-            name: new CatalogCampaignName(request.name)
-        })
-        
         const partners = await this.partnerDataProvider.findByIds(request.partnerIds.map(id => new PartnerId(id)))
         
         if(!this.hasPartner(partners)){
@@ -34,6 +27,14 @@ export class CreateCampaignCatalogUseCaseInteractor implements CreateCampaignCat
         if(this.somePartnersMissing(partners, request.partnerIds)){
             throw new PartnerMissingError
         }
+        
+        const createdCampaign = CatalogCampaign.create({
+            status: request.status,
+            startDateTime: request.startDateTime,
+            endDateTime: request.endDateTime,
+            name: new CatalogCampaignName(request.name)
+        })
+        
         return createdCampaign
     }
     private hasPartner(partners: PartnerId[]): boolean {
