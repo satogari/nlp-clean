@@ -26,13 +26,11 @@ export class CatalogCampaign {
   ) {}
 
   public static create(input: CreateCatalogCampaignInput) {
-    if (input.status !== CampaignCatalog.Status.DRAFT) {
+    if (!CatalogCampaign.isDraft(input.status)) {
       throw new CampaignCatalogInvalidLifecycleError();
     }
-    const now = new Date();
     if (
-      !(input.startDateTime.getTime() > now.getTime()) ||
-      !(input.startDateTime.getTime() < input.endDateTime.getTime())
+      !CatalogCampaign.isValidDateRange(input.startDateTime, input.endDateTime)
     ) {
       throw new CampaignCatalogInvalidDateRangeError();
     }
@@ -43,6 +41,19 @@ export class CatalogCampaign {
       input.startDateTime,
       input.endDateTime,
       input.partnerIds,
+    );
+  }
+  private static isDraft(status: CampaignCatalog.Status): boolean {
+    return status === CampaignCatalog.Status.DRAFT;
+  }
+  private static isValidDateRange(
+    startDateTime: Date,
+    endDateTime: Date,
+  ): boolean {
+    const now = new Date();
+    return (
+      startDateTime.getTime() > now.getTime() &&
+      startDateTime.getTime() < endDateTime.getTime()
     );
   }
   public equal(catalogCampaign: CatalogCampaign): boolean {
