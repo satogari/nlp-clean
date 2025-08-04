@@ -2,6 +2,7 @@ import { CatalogCampaignId } from "./catalog-campaign-id.value-object";
 import { CatalogCampaignName } from "./catalog-campaign-name.value-object";
 import { CampaignCatalog } from "./catalog-campaign.enum";
 import { CampaignCatalogInvalidDateRangeError, CampaignCatalogInvalidLifecycleError } from "./catalog-campaign.error";
+import { PartnerId } from "./partner-id.value-object";
 
 export class CreateCatalogCampaignInput  {
         id: CatalogCampaignId
@@ -9,6 +10,7 @@ export class CreateCatalogCampaignInput  {
         status:  CampaignCatalog.Status.DRAFT
         startDateTime: Date
         endDateTime: Date
+        partnerIds: PartnerId[]
 }
 export class CatalogCampaign {
     constructor(
@@ -17,6 +19,7 @@ export class CatalogCampaign {
         private status: CampaignCatalog.Status,
         private startDateTime: Date,
         private endDateTime: Date,
+        private partnerIds: PartnerId[]
     ){}
     
     public static create(input: CreateCatalogCampaignInput){
@@ -27,7 +30,7 @@ export class CatalogCampaign {
         if(!(input.startDateTime.getTime() > now.getTime()) || !(input.startDateTime.getTime() < input.endDateTime.getTime())){
             throw new CampaignCatalogInvalidDateRangeError
         }
-        return new CatalogCampaign(input.id,input.name, input.status, input.startDateTime, input.endDateTime)
+        return new CatalogCampaign(input.id,input.name, input.status, input.startDateTime, input.endDateTime, input.partnerIds)
     }
     get Id() {
         return this.id

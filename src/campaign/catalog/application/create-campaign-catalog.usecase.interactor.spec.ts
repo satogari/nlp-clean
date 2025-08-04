@@ -45,7 +45,8 @@ describe("CreateCampaignCatalog", () => {
                 status: request.status,
                 name: new CatalogCampaignName(request.name),
                 startDateTime: nextFourteenDays,
-                endDateTime: nextFifteenDays
+                endDateTime: nextFifteenDays,
+                partnerIds: request.partnerIds.map(id => new PartnerId(id))
             })
             setupPartnerDataProvider(validPartnerIdObjects)
             inlineMemoryCatalogCampaignRepository.generateId.mockResolvedValue(expectedCatalogCampaignId)
