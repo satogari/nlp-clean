@@ -1,5 +1,5 @@
 export namespace CampaignCatalog {
-    export enum Status {
-        DRAFT,
-    }
+  export enum Status {
+    DRAFT,
+  }
 }
